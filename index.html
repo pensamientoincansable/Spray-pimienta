@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Spray Pimiento — Barcelona Run</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="topbar"><div class="brand"><span class="pepper">✦</span> SPRAY <b>PIMIENTO</b></div><button id="soundBtn" class="icon-button" aria-label="Sonido">♪</button></header>
+    <section class="game-shell" aria-label="Juego Spray Pimiento">
+      <canvas id="game" width="540" height="960"></canvas>
+      <div class="hud hidden" id="hud">
+        <div class="level-chip"><small>NIVEL</small><strong id="levelHUD">01</strong></div>
+        <div class="score-block"><span>JOYAS RECUPERADAS</span><strong id="lootHUD">0</strong></div>
+        <div class="life"><i></i><i></i><i></i></div>
+      </div>
+      <div id="menu" class="overlay menu">
+        <div class="seal">BCN<br><span>RUN</span></div>
+        <p class="eyebrow">LA RUTA SOLIDARIA</p>
+        <h1>SPRAY<br><em>PIMIENTO</em></h1>
+        <p class="intro">Corre por Barcelona, recupera lo robado y devuélvelo a su gente.</p>
+        <div class="route-card"><span class="route-dot"></span><div><b id="routeTitle">Eixample · Plaça Catalunya</b><small id="routeText">Ruta 1 de 4 · 850 m</small></div><span class="arrow">›</span></div>
+        <button class="primary" id="playBtn">EMPEZAR RUTA <span>▶</span></button>
+        <p class="tips">⌨ ← → para cambiar de carril &nbsp;·&nbsp; ↑ saltar &nbsp;·&nbsp; ESPACIO usar</p>
+      </div>
+      <div id="pause" class="overlay hidden"><div class="modal"><p class="eyebrow">RESPIRA</p><h2>PAUSA</h2><button class="primary" id="resumeBtn">SEGUIR</button><button class="secondary" id="restartBtn">REINICIAR RUTA</button></div></div>
+      <div id="result" class="overlay hidden"><div class="modal result-modal"><div class="delivery-icon">♥</div><p class="eyebrow" id="resultKicker">MISIÓN COMPLETADA</p><h2 id="resultTitle">¡DEVUELTO!</h2><p id="resultCopy">La gente del barrio recupera sus cosas.</p><div class="rewards"><div><small>BOTÍN DEVUELTO</small><b id="resultLoot">0</b></div><div><small>EXP GANADA</small><b id="resultXP">+0</b></div></div><div class="xpbar"><i id="xpFill"></i></div><p class="levelup" id="levelupText">Nivel de corredor 1</p><button class="primary" id="nextBtn">SIGUIENTE RUTA <span>›</span></button><button class="secondary" id="menuBtn">VOLVER AL MAPA</button></div></div>
+      <button id="pauseBtn" class="pause hidden" aria-label="Pausar">Ⅱ</button>
+    </section>
+    <section class="controls" aria-label="Controles">
+      <button id="leftBtn" aria-label="Izquierda">‹</button><button id="jumpBtn" class="jump" aria-label="Saltar">▲</button><button id="actionBtn" class="action" aria-label="Usar spray">✦<small>USAR</small></button><button id="rightBtn" aria-label="Derecha">›</button>
+    </section>
+    <footer>FICCIÓN · CUIDA TU BARRIO · JUEGA CON RESPETO</footer>
+  </main>
+  <script src="game.js"></script>
+</body>
+</html>
