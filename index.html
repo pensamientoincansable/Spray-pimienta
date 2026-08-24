@@ -2,41 +2,375 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Spray Pimiento — Barcelona Run</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>Spray Pimienta: Barcelona Street Defender — Simulador Urbano</title>
+  <meta name="description" content="Simulador de autodefensa urbana en Barcelona. Neutraliza carteristas y tironeros con spray de gel pimienta y tinte de marcaje policial indeleble para facilitar su detención." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <main class="app">
-    <header class="topbar"><div class="brand"><span class="pepper">✦</span> SPRAY <b>PIMIENTO</b></div><button id="soundBtn" class="icon-button" aria-label="Sonido">♪</button></header>
-    <section class="game-shell" aria-label="Juego Spray Pimiento">
-      <canvas id="game" width="540" height="960"></canvas>
-      <div class="hud hidden" id="hud">
-        <div class="level-chip"><small>NIVEL</small><strong id="levelHUD">01</strong></div>
-        <div class="score-block"><span>JOYAS RECUPERADAS</span><strong id="lootHUD">0</strong></div>
-        <div class="life"><i></i><i></i><i></i></div>
+  <div class="app-container">
+    <!-- Header / Status Bar -->
+    <header class="top-nav">
+      <div class="brand">
+        <span class="badge-icon">🚨</span>
+        <div class="brand-text">
+          <span class="title">SPRAY <b>PIMIENTA</b></span>
+          <span class="subtitle">BARCELONA URBAN PATROL</span>
+        </div>
       </div>
-      <div id="menu" class="overlay menu">
-        <div class="seal">BCN<br><span>RUN</span></div>
-        <p class="eyebrow">LA RUTA SOLIDARIA</p>
-        <h1>SPRAY<br><em>PIMIENTO</em></h1>
-        <p class="intro">Corre por Barcelona, recupera lo robado y devuélvelo a su gente.</p>
-        <div class="route-card"><span class="route-dot"></span><div><b id="routeTitle">Eixample · Plaça Catalunya</b><small id="routeText">Ruta 1 de 4 · 850 m</small></div><span class="arrow">›</span></div>
-        <button class="primary" id="playBtn">EMPEZAR RUTA <span>▶</span></button>
-        <p class="tips">⌨ ← → para cambiar de carril &nbsp;·&nbsp; ↑ saltar &nbsp;·&nbsp; ESPACIO usar</p>
+      <div class="nav-actions">
+        <button id="guideBtn" class="pill-btn" title="Guía de Carteristas">📖 Dossier</button>
+        <button id="soundBtn" class="icon-btn" title="Alternar Sonido" aria-label="Sonido">🔊</button>
       </div>
-      <div id="pause" class="overlay hidden"><div class="modal"><p class="eyebrow">RESPIRA</p><h2>PAUSA</h2><button class="primary" id="resumeBtn">SEGUIR</button><button class="secondary" id="restartBtn">REINICIAR RUTA</button></div></div>
-      <div id="result" class="overlay hidden"><div class="modal result-modal"><div class="delivery-icon">♥</div><p class="eyebrow" id="resultKicker">MISIÓN COMPLETADA</p><h2 id="resultTitle">¡DEVUELTO!</h2><p id="resultCopy">La gente del barrio recupera sus cosas.</p><div class="rewards"><div><small>BOTÍN DEVUELTO</small><b id="resultLoot">0</b></div><div><small>EXP GANADA</small><b id="resultXP">+0</b></div></div><div class="xpbar"><i id="xpFill"></i></div><p class="levelup" id="levelupText">Nivel de corredor 1</p><button class="primary" id="nextBtn">SIGUIENTE RUTA <span>›</span></button><button class="secondary" id="menuBtn">VOLVER AL MAPA</button></div></div>
-      <button id="pauseBtn" class="pause hidden" aria-label="Pausar">Ⅱ</button>
+    </header>
+
+    <!-- Main Game Canvas Container -->
+    <main class="game-wrapper">
+      <canvas id="gameCanvas" width="540" height="960"></canvas>
+
+      <!-- In-Game HUD -->
+      <div id="hud" class="hud-overlay hidden">
+        <!-- Top HUD Row -->
+        <div class="hud-top">
+          <div class="district-badge">
+            <span class="loc-pin">📍</span>
+            <div>
+              <small id="hudDistrictType">DISTRITO URBANO</small>
+              <strong id="hudDistrictName">La Rambla · Boqueria</strong>
+            </div>
+          </div>
+
+          <div class="police-alert-badge" id="policeAlertBadge">
+            <div class="siren-beacon"></div>
+            <div class="alert-info">
+              <small>PATRULLA POLICIAL</small>
+              <span id="hudPoliceStatus">EN ESPERA</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Middle Street Alert / Danger Bar -->
+        <div class="security-meter-wrap">
+          <div class="security-meta">
+            <span>🛡️ SEGURIDAD DEL BARRIO</span>
+            <span id="securityPctText">85%</span>
+          </div>
+          <div class="security-bar-track">
+            <div id="securityBarFill" class="security-bar-fill"></div>
+          </div>
+        </div>
+
+        <!-- Main Stats Strip -->
+        <div class="stats-strip">
+          <div class="stat-pill">
+            <span class="stat-ico">🎯</span>
+            <div class="stat-data">
+              <small>MARCADOS</small>
+              <strong id="hudMarked">0</strong>
+            </div>
+          </div>
+          <div class="stat-pill">
+            <span class="stat-ico">👮</span>
+            <div class="stat-data">
+              <small>DETENIDOS</small>
+              <strong id="hudArrested">0</strong>
+            </div>
+          </div>
+          <div class="stat-pill">
+            <span class="stat-ico">💎</span>
+            <div class="stat-data">
+              <small>RECUPERADO</small>
+              <strong id="hudLootCount">0</strong>
+            </div>
+          </div>
+          <div class="stat-pill score-pill">
+            <span class="stat-ico">⭐</span>
+            <div class="stat-data">
+              <small>PUNTOS</small>
+              <strong id="hudScore">0</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Spray Ammo / Canister Status HUD -->
+        <div class="hud-bottom">
+          <div class="spray-gauge-card">
+            <div class="spray-can-art">
+              <div class="canister-body">
+                <div id="sprayLiquidFill" class="canister-fluid"></div>
+                <div class="canister-label">SABRE<br>RED-UV</div>
+              </div>
+            </div>
+            <div class="spray-stats">
+              <div class="spray-title-row">
+                <span class="spray-name" id="currentSprayName">GEL OC + TINTE UV</span>
+                <span class="spray-pct" id="sprayAmmoText">100%</span>
+              </div>
+              <div class="spray-bar-bg">
+                <div id="sprayBarFill" class="spray-bar-inner"></div>
+              </div>
+              <small class="spray-desc">Tinte de marcaje indeleble para identificación policial</small>
+            </div>
+            <button id="whistleBtn" class="whistle-btn" title="Silbato de alerta vecinal">📢 ALERTA</button>
+          </div>
+        </div>
+
+        <!-- Floating Quick Notifications / Banners -->
+        <div id="quickBanner" class="quick-banner hidden"></div>
+        <button id="pauseBtn" class="pause-float-btn" aria-label="Pausa">⏸</button>
+      </div>
+
+      <!-- Main Menu Screen -->
+      <div id="menuOverlay" class="overlay screen-menu">
+        <div class="menu-content">
+          <div class="bcn-header-seal">
+            <div class="bcn-crest">BCN</div>
+            <span class="seal-badge">SEGURIDAD CIUDADANA</span>
+          </div>
+
+          <h1 class="main-title">SPRAY <span>PIMIENTA</span></h1>
+          <p class="tagline">DEFENSA URBANA & PATRULLA ANTIDELINCUENCIA</p>
+          <p class="mission-desc">
+            Protege a vecinos y turistas de carteristas y tironeros en las calles de Barcelona. 
+            Dispara el <strong>gel de pimienta con tinte de marcaje indeleble</strong>: cégalos, márcalos con tinte visible naranja y facilita su <strong>detención inmediata por la Guàrdia Urbana y Mossos d'Esquadra</strong>.
+          </p>
+
+          <!-- District Selection Carousel -->
+          <div class="district-selector">
+            <button id="prevDistrictBtn" class="carousel-arrow">‹</button>
+            <div class="district-card" id="districtCard">
+              <div class="district-header">
+                <span class="district-tag" id="menuDistrictTag">DISTRITO 1 · CIUTAT VELLA</span>
+                <span class="district-diff" id="menuDistrictDiff">MEDIA</span>
+              </div>
+              <h3 id="menuDistrictTitle">La Rambla & Mercat Boqueria</h3>
+              <p id="menuDistrictDesc">Bulevar peatonal histórico, terrazas y turistas distraídos con cámaras y teléfonos. Focos de carteristas del método del mapa.</p>
+              <div class="district-meta">
+                <span>🎯 Objetivo: <strong>5 Detenciones</strong></span>
+                <span>🚨 Patrulla: <strong>Guàrdia Urbana BCN</strong></span>
+              </div>
+            </div>
+            <button id="nextDistrictBtn" class="carousel-arrow">›</button>
+          </div>
+
+          <div class="menu-buttons">
+            <button id="startPlayBtn" class="btn-primary">
+              <span>SALIR A PATRULLAR</span>
+              <span class="btn-arrow">▶</span>
+            </button>
+            <div class="sub-buttons">
+              <button id="openArsenalBtn" class="btn-secondary">⚙️ Equipamiento</button>
+              <button id="openDossierBtn" class="btn-secondary">📋 Modus Operandi</button>
+            </div>
+          </div>
+
+          <div class="keyboard-helper">
+            <span>⌨️ <b>← →</b> Moverse / Apuntar</span>
+            <span><b>ESPACIO</b> o <b>CLICK</b> Disparar Spray Gel</span>
+            <span><b>W / ↑</b> Silbato Policial</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Equipment / Arsenal Modal -->
+      <div id="arsenalModal" class="overlay hidden">
+        <div class="modal-dialog">
+          <div class="modal-header">
+            <h2>⚙️ ARSENAL & EQUIPO DE DEFENSA</h2>
+            <button class="modal-close" id="closeArsenalBtn">✕</button>
+          </div>
+          <p class="modal-sub">Mejora tus sprays homologados y herramientas de seguridad ciudadana.</p>
+
+          <div class="upgrades-list">
+            <div class="upgrade-item active-upgrade">
+              <div class="upg-icon">🥫</div>
+              <div class="upg-info">
+                <h4>Spray Sabre Red Gel UV (Estándar)</h4>
+                <p>Chorro de gel balístico concentrado con tinte indeleble naranja fosforito visible a larga distancia.</p>
+                <div class="upg-stats">Alcance: 4m · Tinte: Naranja Neón · Viento: Resistente</div>
+              </div>
+              <button class="upg-btn equipped" disabled>EQUIPADO</button>
+            </div>
+
+            <div class="upgrade-item" id="upgStream">
+              <div class="upg-icon">💥</div>
+              <div class="upg-info">
+                <h4>Chorro Balístico de Alta Presión</h4>
+                <p>Mayor distancia efectiva y presión continua. Imposibilita la fuga de tironeros en patinete.</p>
+                <div class="upg-stats">Alcance: +50% · Velocidad de chorro: +40%</div>
+              </div>
+              <button class="upg-btn" id="buyStreamBtn">SELECCIONAR</button>
+            </div>
+
+            <div class="upgrade-item" id="upgDye">
+              <div class="upg-icon">🎨</div>
+              <div class="upg-info">
+                <h4>Tinte Policial Ultrabrillante + Rastreo</h4>
+                <p>Pigmento fluorescente de máxima fijación. La policía detecta al sospechoso en segundos.</p>
+                <div class="upg-stats">Alerta Policial: +60% más rápida · Rastro visible</div>
+              </div>
+              <button class="upg-btn" id="buyDyeBtn">SELECCIONAR</button>
+            </div>
+
+            <div class="upgrade-item" id="upgWhistle">
+              <div class="upg-icon">📣</div>
+              <div class="upg-info">
+                <h4>Megáfono / Silbato Fox 40 de Emergencia</h4>
+                <p>Emite un pitido ensordecedor que desorienta a los carteristas y convoca patrullas de apoyo.</p>
+                <div class="upg-stats">Efecto: Alerta inmediata a patrullas urbanas</div>
+              </div>
+              <button class="upg-btn" id="buyWhistleBtn">SELECCIONAR</button>
+            </div>
+          </div>
+
+          <button class="btn-primary modal-action-btn" id="closeArsenalBtn2">LISTO PARA LA PATRULLA</button>
+        </div>
+      </div>
+
+      <!-- Dossier / Modus Operandi Modal -->
+      <div id="dossierModal" class="overlay hidden">
+        <div class="modal-dialog">
+          <div class="modal-header">
+            <h2>📋 GUÍA DE MODUS OPERANDI EN BARCELONA</h2>
+            <button class="modal-close" id="closeDossierBtn">✕</button>
+          </div>
+          <p class="modal-sub">Conoce las técnicas delictivas habituales y cómo neutralizarlas con spray de marcaje:</p>
+
+          <div class="dossier-grid">
+            <div class="dossier-card">
+              <div class="dossier-icon">🛴</div>
+              <div class="dossier-body">
+                <h4>El Tironero en Patinete Eléctrico</h4>
+                <p>Pasa a gran velocidad por aceras y calzadas arrancando teléfonos de alta gama y cadenas del cuello a transeúntes.</p>
+                <span class="tip">💡 <b>Estrategia:</b> Dispara el spray en trayectoria anticipada para cegarlo y marcar su patinete y ropa con tinte naranja.</span>
+              </div>
+            </div>
+
+            <div class="dossier-card">
+              <div class="dossier-icon">🗺️</div>
+              <div class="dossier-body">
+                <h4>El Método del Mapa / Periódico</h4>
+                <p>Se aproxima a turistas con un mapa desplegado o un papel pidiendo indicaciones para tapar sus manos mientras sustrae bolsos o carteras.</p>
+                <span class="tip">💡 <b>Estrategia:</b> Rocía directamente al sospechoso en cuanto se acerque sospechosamente al turista.</span>
+              </div>
+            </div>
+
+            <div class="dossier-card">
+              <div class="dossier-icon">⌚</div>
+              <div class="dossier-body">
+                <h4>La Maniobra del Tropiezo / Abrazo ("Maniobra Ronaldinho")</h4>
+                <p>Finge tropezar, bailar o saludar efusivamente a la víctima para desabrochar sigilosamente relojes de lujo (Rolex, Patek, etc.).</p>
+                <span class="tip">💡 <b>Estrategia:</b> El spray anula su movilidad al instante y recupera el reloj sustraído.</span>
+              </div>
+            </div>
+
+            <div class="dossier-card">
+              <div class="dossier-icon">☕</div>
+              <div class="dossier-body">
+                <h4>El Saqueador de Terrazas</h4>
+                <p>Aprovecha las mesas de bares en la Rambla o Born para llevarse mochilas, portátiles o chaquetas colgadas en las sillas.</p>
+                <span class="tip">💡 <b>Estrategia:</b> Márcalo antes de que llegue a la boca de metro para que la policía lo intercepte in fraganti.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="police-protocol-box">
+            <strong>🚓 PROTOCOLO DE MARCAJE POLICIAL:</strong>
+            <p>El spray de pimienta homologado proyecta un tinte UV naranja no letal pero imborrable durante días. Cuando marcas a un delincuente, la Guàrdia Urbana y los Mossos d'Esquadra lo identifican sin margen de duda entre la multitud y proceden a su detención judicial con las pruebas recuperadas.</p>
+          </div>
+
+          <button class="btn-primary modal-action-btn" id="closeDossierBtn2">ENTENDIDO, A PATRULLAR</button>
+        </div>
+      </div>
+
+      <!-- Result / Debriefing Screen -->
+      <div id="resultOverlay" class="overlay hidden">
+        <div class="modal-dialog debrief-dialog">
+          <div class="debrief-header">
+            <span class="debrief-badge" id="debriefBadge">INFORME POLICIAL</span>
+            <h2 id="debriefTitle">¡OPERATIVO COMPLETADO!</h2>
+            <p id="debriefSubtitle">Zona despejada y carteristas puestos a disposición judicial.</p>
+          </div>
+
+          <div class="police-report-grid">
+            <div class="report-box">
+              <span class="rep-icon">🎯</span>
+              <small>SOSPECHOSOS MARCADOS CON TINTE</small>
+              <b id="debriefMarked">0</b>
+            </div>
+            <div class="report-box">
+              <span class="rep-icon">🚔</span>
+              <small>DELINCUENTES DETENIDOS IN FRAGANTI</small>
+              <b id="debriefArrested">0</b>
+            </div>
+            <div class="report-box">
+              <span class="rep-icon">💎</span>
+              <small>RELOJES Y MÓVILES DEVUELTOS</small>
+              <b id="debriefLoot">0</b>
+            </div>
+            <div class="report-box">
+              <span class="rep-icon">🧪</span>
+              <small>PRECISIÓN DE SPRAY PIMIENTA</small>
+              <b id="debriefAccuracy">100%</b>
+            </div>
+          </div>
+
+          <div class="security-status-card">
+            <div class="sec-label">ESTADO DE SEGURIDAD CIUDADANA TRAS EL OPERATIVO:</div>
+            <div class="sec-result" id="debriefSecurityStatus">🟢 BARRIO SEGURO Y PROTEGIDO</div>
+          </div>
+
+          <div class="debrief-buttons">
+            <button id="nextMissionBtn" class="btn-primary">SIGUIENTE DISTRITO <span>›</span></button>
+            <button id="retryMissionBtn" class="btn-secondary">REPETIR OPERATIVO</button>
+            <button id="returnMenuBtn" class="btn-outline">VOLVER AL MAPA</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pause Screen -->
+      <div id="pauseOverlay" class="overlay hidden">
+        <div class="modal-dialog small-dialog">
+          <h2>PATRULLA EN PAUSA</h2>
+          <p>Tómate un respiro antes de continuar la ronda por Barcelona.</p>
+          <div class="pause-actions">
+            <button id="resumeGameBtn" class="btn-primary">CONTINUAR PATRULLA</button>
+            <button id="restartGameBtn" class="btn-secondary">REINICIAR DISTRITO</button>
+            <button id="exitToMenuBtn" class="btn-outline">VOLVER AL MENÚ</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Mobile Touch / On-Screen Game Controls -->
+    <section class="on-screen-controls" id="touchControls">
+      <div class="dpad">
+        <button id="touchLeft" class="ctrl-btn" aria-label="Moverse a la izquierda">◀</button>
+        <button id="touchCenter" class="ctrl-btn mid-lane" aria-label="Carril central">●</button>
+        <button id="touchRight" class="ctrl-btn" aria-label="Moverse a la derecha">▶</button>
+      </div>
+
+      <div class="action-cluster">
+        <button id="touchWhistle" class="ctrl-whistle" aria-label="Silbato">📢<small>ALERTA</small></button>
+        <button id="touchSpray" class="ctrl-spray" aria-label="Disparar Spray de Pimienta">
+          <div class="spray-btn-core">
+            <span class="spray-icon">🥫💨</span>
+            <strong>DISPARAR SPRAY</strong>
+            <small>GEL + TINTE UV</small>
+          </div>
+        </button>
+      </div>
     </section>
-    <section class="controls" aria-label="Controles">
-      <button id="leftBtn" aria-label="Izquierda">‹</button><button id="jumpBtn" class="jump" aria-label="Saltar">▲</button><button id="actionBtn" class="action" aria-label="Usar spray">✦<small>USAR</small></button><button id="rightBtn" aria-label="Derecha">›</button>
-    </section>
-    <footer>FICCIÓN · CUIDA TU BARRIO · JUEGA CON RESPETO</footer>
-  </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <span>SIMULACIÓN URBANA DE SEGURIDAD CIUDADANA · BARCELONA</span>
+    </footer>
+  </div>
+
   <script src="game.js"></script>
 </body>
 </html>
